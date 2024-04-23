@@ -19,8 +19,4 @@ Endpoint para recuperar o brinquedo cadastrado
 Dados persistem no banco de dados
 ![image](https://github.com/Mari-Bastet/cp2-java/assets/82931897/1b9e6723-c31b-4350-81c0-781f0321d527)
 
-1. Clone o repositório:
 
-    ```bash
-    git clone https://github.com/Mari-Bastet/JAVACHALLENGEFINAL.git
-    ```
