@@ -17,6 +17,7 @@ Endpoint para recuperar o brinquedo cadastrado
 ![image](https://github.com/Mari-Bastet/cp2-java/assets/82931897/3838b5ba-09b1-45a3-b4b3-900e09067e5e)
 
 Dados persistem no banco de dados
-![image](https://github.com/Mari-Bastet/cp2-java/assets/82931897/1b9e6723-c31b-4350-81c0-781f0321d527)
+![image](https://github.com/Mari-Bastet/cp2-java/assets/82931897/d1f61e8b-c592-4a97-97e8-1bcb4217833e)
+
 
 
