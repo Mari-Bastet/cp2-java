@@ -3,6 +3,8 @@ package checkpointjava.cpjava;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -26,10 +28,16 @@ public class BrinquedoController {
 
 		try {
 			Optional<Brinquedo> bri = repo.findById(id);
-
+			
 			if (bri.isPresent()) {
+				
+				Brinquedo brinquedo = bri.get();
 
-				return ResponseEntity.ok(bri);
+				EntityModel<Brinquedo> brinquedoResource = EntityModel.of(brinquedo,
+						WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(BrinquedoController.class)
+								.deletarBrinquedoPorId(brinquedo.getId())).withRel("DELETE"));
+				
+				return ResponseEntity.ok(brinquedoResource);
 
 			} else {
 
@@ -45,29 +53,37 @@ public class BrinquedoController {
 
 	}
 
-	@PostMapping
-	public ResponseEntity<String> adicionaBrinquedo(@RequestBody Brinquedo brinquedo) {
+	@PostMapping("/adicionarBrinquedo")
+	public ResponseEntity<?> adicionaBrinquedo(@RequestBody Brinquedo brinquedoEntrada) {
 
 		try {
 
-			repo.save(brinquedo);
+			
+		Brinquedo brinquedo = repo.save(brinquedoEntrada);
 
-			return ResponseEntity.ok("Brinquedo criado com sucesso");
+			EntityModel<Brinquedo> brinquedoResource = EntityModel.of(brinquedo,
+					WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(BrinquedoController.class)
+							.retornaBrinquedoPorId(brinquedo.getId())).withRel("GET"),
+					WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(BrinquedoController.class)
+							.deletarBrinquedoPorId(brinquedo.getId())).withRel("DELETE"),
+					WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(BrinquedoController.class)
+							.alterarBrinquedoPorId(brinquedo)).withRel("POST"));
+
+			return ResponseEntity.ok(brinquedoResource);
 
 		} catch (Exception e) {
 
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST)
 					.body("Ocorreu um erro ao inserir brinquedo: " + e);
 		}
 
 	}
 
-	@DeleteMapping
+	@DeleteMapping("/{id}")
 	public ResponseEntity<?> deletarBrinquedoPorId(@PathVariable Long id) {
 
 		try {
 			repo.deleteById(id);
-			;
 
 			return ResponseEntity.status(HttpStatus.OK).body("Brinquedo excluído com sucesso");
 
@@ -78,22 +94,38 @@ public class BrinquedoController {
 		}
 
 	}
-	
-	@PutMapping
-	public ResponseEntity<?> alterarBrinquedoPorId(@RequestBody Brinquedo brinquedo) {
 
-		try {
-			repo.save(brinquedo);
-			
+	  @PutMapping("/atualizarBrinquedo")
+	    public ResponseEntity<?> alterarBrinquedoPorId(@RequestBody Brinquedo brinquedo) {
+	        try {
+	            Optional<Brinquedo> brinquedoExistenteOptional = repo.findById(brinquedo.getId());
 
-			return ResponseEntity.status(HttpStatus.OK).body("Brinquedo atualizado com sucesso");
+	            if (!brinquedoExistenteOptional.isPresent()) {
+	                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Brinquedo não encontrado para o ID: " + brinquedo.getId());
+	            }
 
-		} catch (Exception e) {
+	            Brinquedo brinquedoExistente = brinquedoExistenteOptional.get();
+	            
+	            brinquedoExistente.setNome(brinquedo.getNome());
+	            brinquedoExistente.setPreco(brinquedo.getPreco());
+	            brinquedoExistente.setTamanho(brinquedo.getTamanho());
+	            brinquedoExistente.setTipo(brinquedo.getTipo());
+	            brinquedoExistente.setClassificacao(brinquedo.getClassificacao());
+	            
+	            Brinquedo brinquedoAtualizado = repo.save(brinquedoExistente);
+	            
+	            EntityModel<Brinquedo> brinquedoResource = EntityModel.of(brinquedoAtualizado,
+						WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(BrinquedoController.class)
+								.retornaBrinquedoPorId(brinquedoAtualizado.getId())).withRel("GET"),
+						WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(BrinquedoController.class)
+								.deletarBrinquedoPorId(brinquedoAtualizado.getId())).withRel("DELETE"));
+	            
+	            return ResponseEntity.ok(brinquedoResource);
 
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erro ao atualizar brinquedo: " + e);
+	        } catch (Exception e) {
 
-		}
-
-	}
+	        	return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Erro ao atualizar brinquedo: " + e.getMessage());
+	        }
+	    }
 
 }
